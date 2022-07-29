@@ -32,11 +32,16 @@ const getPracticianInformations = (url) => getDom(url, (dom) => {
 
 (() => {
     const csv = cities.map(city => city.toLowerCase()).reduce(async (csv, city) => {
-        for (let page = 1; page < 2; page++) {
-            const url = searchUrl(job, city, page);
-            const practicianUrls = await getPracticianUrls(url);
-            const practicianInformations = await Promise.all([...practicianUrls[0]].map(await getPracticianInformations));
-            console.log(practicianInformations);
+        try {
+            for (let page = 1; page < 2; page++) {
+                const url = searchUrl(job, city, page);
+                const practicianUrls = await getPracticianUrls(url);
+                console.log(practicianUrls);
+                const practicianInformations = await Promise.all([...practicianUrls[0]].map(await getPracticianInformations));
+                console.log(practicianInformations);
+            }
+        } catch (error) {
+            console.log(error.message);
         }
     }, header);
     // console.log(csv);
