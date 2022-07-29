@@ -36,7 +36,7 @@ const getPracticianInformations = (url) => getDom(url, (dom) => {
         for (let page = 1; page < 2; page++) {
             const practicianUrls = await getPracticianUrls(searchUrl(job, city, page));
             const practicianInformations = await Promise.all(practicianUrls.map(await getPracticianInformations));
-            csv += practicianInformations.reduce((row, {name, speciality, phoneNumber}) => [name, speciality, phoneNumber, city].join(';') + '\r\n', '')
+            csv += practicianInformations.reduce((row, {name, speciality, phoneNumber}) => row + [name, speciality, phoneNumber, city].join(';') + '\r\n', '')
             console.log(csv);
         }
     }, header);
