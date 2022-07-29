@@ -1,7 +1,7 @@
 const axios = require('axios');
 const {JSDOM} = require('jsdom');
 
-const header = 'Nom;Numéro de téléphone;Email;Ville';
+const header = 'Nom;Métier;Numéro de téléphone;Ville';
 const job = 'sophrologue';
 // const cities = ['Angers', 'Dijon', 'Groble', 'Le havre', 'Saint Etienne', 'Toulon Reims', 'Rennes', 'Lille', 'Bordeaux', 'Strasbourg', 'Montpellier', 'Nantes', 'Nice', 'Toulouse', 'Lyon', 'Paris'];
 const cities = ['Nantes'];
@@ -32,17 +32,11 @@ const getPracticianInformations = (url) => getDom(url, (dom) => {
 
 (() => {
     const csv = cities.map(city => city.toLowerCase()).reduce(async (csv, city) => {
-        try {
-            for (let page = 1; page < 2; page++) {
-                const url = searchUrl(job, city, page);
-                const practicianUrls = await getPracticianUrls(url);
-                console.log(practicianUrls);
-                const practicianInformations = await Promise.all([...practicianUrls[0]].map(await getPracticianInformations));
-                console.log(practicianInformations);
-            }
-        } catch (error) {
-            console.log(error.message);
+        for (let page = 1; page < 2; page++) {
+            const practicianUrls = await getPracticianUrls(searchUrl(job, city, page));
+            const practicianInformations = await Promise.all([practicianUrls[0]].map(await getPracticianInformations));
+            return practicianInformations.reduce((row, {name, speciality, phoneNumber}) => [name, speciality, phoneNumber, city].join(';') + '\r\n', '')
         }
     }, header);
-    // console.log(csv);
+    console.log(csv);
 })();
