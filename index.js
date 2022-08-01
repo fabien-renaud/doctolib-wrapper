@@ -1,9 +1,11 @@
 const axios = require('axios');
 const {JSDOM} = require('jsdom');
+const https = require('https');
+const {Promise} = require('bluebird');
 
 const header = 'Nom;Métier;Numéro de téléphone;Ville\r\n';
 const job = 'sophrologue';
-// const cities = ['Angers', 'Dijon', 'Groble', 'Le havre', 'Saint Etienne', 'Toulon Reims', 'Rennes', 'Lille', 'Bordeaux', 'Strasbourg', 'Montpellier', 'Nantes', 'Nice', 'Toulouse', 'Lyon', 'Paris'];
+// const cities = ['Angers', 'Dijon', 'Groble', 'Le-havre', 'Saint-Etienne', 'Toulon', 'Reims', 'Rennes', 'Lille', 'Bordeaux', 'Strasbourg', 'Montpellier', 'Nantes', 'Nice', 'Toulouse', 'Lyon', 'Paris'];
 const cities = ['Nantes'];
 
 const baseUrl = 'https://www.doctolib.fr';
@@ -13,7 +15,9 @@ const querySelector = (dom, selector) => dom?.window?.document?.querySelector(se
 const querySelectorAll = (dom, selector) => [...dom?.window?.document?.querySelectorAll(selector)];
 
 const getDom = async (url, callback) => {
-    const {status, data} = await axios.get(url);
+    const {status, data} = await axios.get(url).then((result) => result).catch((error) => ({status: error.response?.status}));
+    if (status === 404) return [];
+    if (status === 403) throw new Error('403 Unauthorized');
     if (status !== 200 || !data) throw new Error('This page does not exists');
     const dom = new JSDOM(data);
     return callback(dom);
@@ -30,14 +34,16 @@ const getPracticianInformations = (url) => getDom(url, (dom) => {
     return {name, speciality, phoneNumber};
 });
 
-(() => {
-    let csv = '';
-    cities.map(city => city.toLowerCase()).reduce(async (csv, city) => {
-        for (let page = 1; page < 2; page++) {
-            const practicianUrls = await getPracticianUrls(searchUrl(job, city, page));
-            const practicianInformations = await Promise.all(practicianUrls.map(await getPracticianInformations));
-            csv += practicianInformations.reduce((row, {name, speciality, phoneNumber}) => row + [name, speciality, phoneNumber, city].join(';') + '\r\n', '')
-            console.log(csv);
-        }
-    }, header);
+(async () => {
+    console.time('csv');
+    const csv = await cities.map(city => city.toLowerCase()).reduce(async (rows, city) => {
+        console.time(city);
+        const searchUrls = [5000].map((page) => searchUrl(job, city, page));
+        const practicianUrls = await Promise.map(searchUrls, getPracticianUrls, {concurrency: 1});
+        const practicianInformations = await Promise.map(practicianUrls.flat(), getPracticianInformations, {concurrency: 1});
+        console.timeEnd(city);
+        return await rows + practicianInformations.reduce((row, {name, speciality, phoneNumber}) => row + [name, speciality, phoneNumber, city].join(';') + '\r\n', '');
+    }, Promise.resolve(header));
+    console.timeEnd('csv');
+    console.log(csv);
 })();
