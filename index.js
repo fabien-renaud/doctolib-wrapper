@@ -5,8 +5,8 @@ const {Promise} = require('bluebird');
 
 const header = 'Nom;Métier;Numéro de téléphone;Ville\r\n';
 const job = 'sophrologue';
-// const cities = ['Angers', 'Dijon', 'Groble', 'Le-havre', 'Saint-Etienne', 'Toulon', 'Reims', 'Rennes', 'Lille', 'Bordeaux', 'Strasbourg', 'Montpellier', 'Nantes', 'Nice', 'Toulouse', 'Lyon', 'Paris'];
-const cities = ['Nantes'];
+const cities = ['Angers', 'Dijon', 'Groble', 'Le-havre', 'Saint-Etienne', 'Toulon', 'Reims', 'Rennes', 'Lille', 'Bordeaux', 'Strasbourg', 'Montpellier', 'Nantes', 'Nice', 'Toulouse', 'Lyon', 'Paris'];
+// const cities = ['Nantes'];
 
 const baseUrl = 'https://www.doctolib.fr';
 const searchUrl = (job, city, page) => `${baseUrl}/${job}/${city}?page=${page}`;
@@ -38,7 +38,7 @@ const getPracticianInformations = (url) => getDom(url, (dom) => {
     console.time('csv');
     const csv = await cities.map(city => city.toLowerCase()).reduce(async (rows, city) => {
         console.time(city);
-        const searchUrls = [5000].map((page) => searchUrl(job, city, page));
+        const searchUrls = [1, 2, 3, 4, 5].map((page) => searchUrl(job, city, page));
         const practicianUrls = await Promise.map(searchUrls, getPracticianUrls, {concurrency: 1});
         const practicianInformations = await Promise.map(practicianUrls.flat(), getPracticianInformations, {concurrency: 1});
         console.timeEnd(city);
