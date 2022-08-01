@@ -5,7 +5,7 @@ const {Promise} = require('bluebird');
 
 const header = 'Nom;Métier;Numéro de téléphone;Ville\r\n';
 const job = 'sophrologue';
-const cities = ['Angers', 'Dijon', 'Groble', 'Le-havre', 'Saint-Etienne', 'Toulon', 'Reims', 'Rennes', 'Lille', 'Bordeaux', 'Strasbourg', 'Montpellier', 'Nantes', 'Nice', 'Toulouse', 'Lyon', 'Paris'];
+const cities = ['Angers', 'Dijon', 'Grenoble', 'Le-havre', 'Saint-Etienne', 'Toulon', 'Reims', 'Rennes', 'Lille', 'Bordeaux', 'Strasbourg', 'Montpellier', 'Nantes', 'Nice', 'Toulouse', 'Lyon', 'Paris'];
 // const cities = ['Nantes'];
 
 const baseUrl = 'https://www.doctolib.fr';
